@@ -1,6 +1,8 @@
 # Crazy Dice
 
-`Crazy Dice` is a small Flutter app that turns the entire screen into a dice roller. Tap anywhere to launch a roll, animate through a shuffled sequence of faces, and play a platform-specific roll sound.
+`Crazy Dice` is a small Flutter app that turns the entire screen into a dice roller. Tap anywhere to launch a roll.
+
+This is just an experiment to generate a multi-platform app through AI and release the app to one or more official stores.
 
 ## Features
 
