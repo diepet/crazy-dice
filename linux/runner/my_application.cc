@@ -139,7 +139,7 @@ bool load_wav_file(const std::string& path, WavData* wav_data) {
   return true;
 }
 
-std::string get_asset_path(const gchar* asset_path) {
+std::string get_executable_directory() {
   char executable_path[PATH_MAX];
   const ssize_t executable_length =
       readlink("/proc/self/exe", executable_path, sizeof(executable_path) - 1);
@@ -150,8 +150,25 @@ std::string get_asset_path(const gchar* asset_path) {
   executable_path[executable_length] = '\0';
   std::string executable(executable_path);
   const size_t separator = executable.find_last_of('/');
-  const std::string executable_directory = executable.substr(0, separator);
-  return executable_directory + "/data/flutter_assets/" + asset_path;
+  return executable.substr(0, separator);
+}
+
+std::string get_data_path(const char* relative_path) {
+  const std::string executable_directory = get_executable_directory();
+  if (executable_directory.empty()) {
+    return std::string();
+  }
+
+  return executable_directory + "/data/" + relative_path;
+}
+
+std::string get_asset_path(const gchar* asset_path) {
+  const std::string data_path = get_data_path("flutter_assets");
+  if (data_path.empty()) {
+    return std::string();
+  }
+
+  return data_path + "/" + asset_path;
 }
 
 class CrazyDiceSoundPlayer {
@@ -328,6 +345,14 @@ static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+  const std::string app_icon_path = get_data_path("app_icon.png");
+  if (!app_icon_path.empty()) {
+    g_autoptr(GError) icon_error = nullptr;
+    if (!gtk_window_set_icon_from_file(window, app_icon_path.c_str(),
+                                       &icon_error)) {
+      g_warning("Failed to set application icon: %s", icon_error->message);
+    }
+  }
 
   gboolean use_header_bar = TRUE;
 #ifdef GDK_WINDOWING_X11
